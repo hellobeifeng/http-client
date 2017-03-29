@@ -1,0 +1,19 @@
+{
+  "name": "http-client",
+  "version": "0.1.0",
+  "description": "http-client-lib-by-nodejs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hellobeifeng/http-client.git"
+  },
+  "author": "hellobeifeng",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hellobeifeng/http-client/issues"
+  },
+  "homepage": "https://github.com/hellobeifeng/http-client#readme"
+}
