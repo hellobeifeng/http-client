@@ -1,2 +1,14 @@
 # http-client
-使用 nodejs 编写的http网络请求库
+
+## 概要
+
+实现了如下标准接口方法的网络请求库
+
+- $get
+- $getJson
+- $post
+- $postJson
+- $setUrlPrefix
+- $addParamsFilter
+
+

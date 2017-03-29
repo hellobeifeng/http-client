@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/hellobeifeng/http-client/issues"
   },
-  "homepage": "https://github.com/hellobeifeng/http-client#readme"
+  "homepage": "https://github.com/hellobeifeng/http-client#readme",
+  "dependencies": {
+    "request": "^2.81.0",
+    "underscore": "^1.8.3",
+    "urijs": "^1.18.9"
+  }
 }
