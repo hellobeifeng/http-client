@@ -14,6 +14,49 @@ var HttpClient = function( urlPrefx, paramsFilters ) {
 };
 
 /**
+ * 获取defaultClient单例
+ * @param {String}  urlPrefix     url统一前缀
+ * @param {Object}  paramsFilters  实现filterParams方法的对象
+ * @returns {HttpClient}
+ */
+HttpClient.$getDefaultClient = function( urlPrefix, paramsFIlters ) {
+  if(!HttpClient.defaultClient) {
+    HttpClient.defaultClient = new HttpClient( urlPrefix, paramsFIlters);
+  }
+  return HttpClient.defaultClient;
+};
+
+
+/**
+ * 添加参数过滤器
+ * @param {object}  value 实现了filterParams方法的对象
+ */
+HttpClient.prototype.$addParamsFilter = function(value) {
+  this.paramsFilters = this.paramsFilters || [];
+  var replaceFlag = false;
+  // 判断是否存在同类型过滤器，如果存在则替换，不存在则增加
+  for(var i= 0; i < this.paramsFilters.length; i++) {
+    var filter = this.paramsFilters[i];
+    if (value.constructor == filter.constructor) {
+      this.paramsFilters.splice(i, 1, value);
+      replaceFlag = true;
+      break;
+    };
+  };
+
+  if (!replaceFlag) {
+    this.paramsFilters.push(value);
+  }
+};
+
+/**
+ * 清除参数过滤器
+ */
+HttpClient.prototype.$clearParamsFilter = function() {
+  this.paramsFilters = [];
+};
+
+/**
  * @description 设置接口前缀
  * @param {String} value 接口前缀
  */
@@ -74,7 +117,7 @@ HttpClient.prototype.getOptions = function( url, method, params ) {
         resultParams = filter.filterParams(resultParams);
       });
     }
-    // 重新设置result.uri的请求参数 TODO 会出现重复参数吗
+    // 重新设置result.uri的请求参数
     uri.setSearch(resultParams);
     result.uri = uri.toString();
 
