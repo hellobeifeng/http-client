@@ -1,6 +1,6 @@
 {
   "name": "http-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "http-client-lib-by-nodejs",
   "main": "app.js",
   "scripts": {
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/hellobeifeng/http-client#readme",
   "dependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "request": "^2.81.0",
     "underscore": "^1.8.3",
     "urijs": "^1.18.9"

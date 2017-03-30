@@ -4,13 +4,21 @@ var URI = require('urijs');
 
 /**
  * 实现标准接口的nodejs httpClient类，将request库请求封装为Promise对象，并提供入参过滤、统一前缀、json解析等统一设置
- * @param {String}  urlPrefix     url统一前缀
- * @param {Object}  paramsFilters  实现filterParams方法的对象
+ * @param {String}  urlPrefix     url统一前缀（http://example.interface.com）
+ * @param {Object}  paramsFilters  实现filterParams方法的对象(外部注入的方法，用于处理参数)
  * @constructor
  */
-var HttpClient = function( urlPrefx, paramsFilter ) {
+var HttpClient = function( urlPrefx, paramsFilters ) {
   this.urlPrefix = urlPrefx;
-  this.paramsFilter = paramsFilter;
+  this.paramsFilters = paramsFilters;
+};
+
+/**
+ * @description 设置接口前缀
+ * @param {String} value 接口前缀
+ */
+HttpClient.prototype.$setUrlPrefix = function(value) {
+  this.urlPrefix = value;
 };
 
 /**
@@ -21,7 +29,7 @@ var HttpClient = function( urlPrefx, paramsFilter ) {
  */
 HttpClient.prototype.getOptions = function( url, method, params ) {
 
-  // 请求结构体
+  // request请求结构体
   var result = {
     uri: url
   };
@@ -35,26 +43,27 @@ HttpClient.prototype.getOptions = function( url, method, params ) {
 
   params = params || {};
 
-  // 如果是相对路径（没设置前缀）则使用程序设置的前缀
+  // 第一步：设置result.uri前缀: 如果是相对路径（没设置前缀）则使用程序设置的前缀
   if( result.uri && result.uri.indexOf('http') !== 0 ) {
     result.uri = this.urlPrefix + result.uri;
   }
 
-  // 默认GET
+  // 第二步：设置result.method: 默认GET
   result.method = method || 'GET';
 
+
+  // 第三步：post请求，设置result.from；get请求，设置result.uri
   if ( result.method === 'POST' ) {
     result.form = params;
 
-    // 使用外部注入的过滤器进行参数处理
+    // 使用外部注入的过滤器处理参数
     if( this.paramsFilters ) {
       this.paramsFilters.forEach(function(filter) {
         result.form = filter.filterParams(result.form)
       })
     }
   } else {
-    // 处理get请求的url参数
-    var uri = new URI(result.uri); // 使用result.uri字符串构建url对象
+    var uri = new URI(result.uri); // 使用result.uri字符串生成url对象
     var paramStr = uri.search();// 获得url中的query字符串
     var paramObj = URI.parseQuery(paramStr);// 获得query请求对象
     var resultParams = _.extend(params, paramObj);// 用result.uri中的请求对象extend接口入参对象，get请求中url中的优先级比较高
@@ -65,10 +74,13 @@ HttpClient.prototype.getOptions = function( url, method, params ) {
         resultParams = filter.filterParams(resultParams);
       });
     }
+    // 重新设置result.uri的请求参数 TODO 会出现重复参数吗
+    uri.setSearch(resultParams);
+    result.uri = uri.toString();
+
   }
-  // 重新设置result.uri的请求参数 TODO 会出现重复参数吗
-  uri.setSearch(resultParams);
-  result.uri = uri.toString();
+
+  // 第四步：设置result.timeout
   result.timeout = result.timeout || 60000;
 
   return result;
@@ -104,15 +116,13 @@ HttpClient.prototype.request = function (options) {
  * @returns {Promise}
  */
 HttpClient.prototype.$get = function( url, params ) {
-  // 根据规则生成request请求参数
-  var options = this.getOptions( url, 'GET', params );
-  // 发起http请求,返回promise对象
+  var options = this.getOptions( url, 'GET', params );// 根据规则生成request请求参数
   return this.request(options);
 };
 
 
 /**
- * @description $get方法的代理，发起http get请求，同时返回JSON对象
+ * @description $get方法的代理，发起http get请求，（将$get请求返回的字符串转换为JSON对象）
  * @param {String}    url   接口请求url
  * @param {object}    params    参数对象
  * @returns {Promise}
@@ -129,12 +139,12 @@ HttpClient.prototype.$getJson = function( url, params ) {
  * @param {String|Object} form 表单参数
  * @returns {Promise}
  */
-HttpClient.prototype.$post = function (url, form) {
-  var options = this.getOptions(url, 'POST', form);
+HttpClient.prototype.$post = function (url, params) {
+  var options = this.getOptions(url, 'POST', params);// 根据规则生成request请求参数
   return this.request(options);
 };
 /**
- * @description $get方法的代理，发起http get请求，同时返回JSON对象
+ * @description $get方法的代理，发起http get请求，（将$post请求返回的字符串转换为JSON对象）
  * @param {String}  url   请求url
  * @param {Object}  params  请求对象，比如表单键值对
  * @returns {Promise}
@@ -145,7 +155,7 @@ HttpClient.prototype.$postJson = function (url, params) {
   });
 };
 
-// 方法，去掉对象中的无效key
+// 工具方法：去掉对象中的value是无效值得key
 function dealElement(obj){
   var param = {};
   if ( obj === null || obj === undefined || obj === "" ) return param;
