@@ -1,5 +1,9 @@
 # http-client
 
+## 安装依赖
+
+    npm install http-client-base --save
+
 ## 概要
 
 一个nodejs编写的网路请求模块。对request模块进行封装。实现了如下标准接口方法。
@@ -10,23 +14,16 @@
 - $postJson
 - $setUrlPrefix
 - $addParamsFilter
+- $clearParamsFilter
 
-## 运行
 
+## 下载项目并运行代码
+
+    
+    git clone https://github.com/hellobeifeng/http-client.git workSpace
+    cd workSpace
     npm install #安装项目依赖
     mocha   #执行测试用例
-
-
-## 外部依赖
-
-### 测试库(chai)
-
-### URL处理库(uri.js)
-
-http://medialize.github.io/URI.js/docs.html
-
-### 网络请求库(request)
-
 
 
 ## 开发笔记
